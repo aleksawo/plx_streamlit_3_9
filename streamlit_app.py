@@ -23,8 +23,8 @@ def run_plaxis_model_plotter():
     s_o, g_o = new_server('host.docker.internal', port_num_output, password=pw)
     s_i, g_i = new_server('host.docker.internal', port_num, password=pw)
 
-#    s_o, g_o = new_server('127.0.0.1', port_num_output, password=pw)
-#    s_i, g_i = new_server('127.0.0.1', port_num, password=pw)
+#    s_o, g_o = new_server('localhost', port_num_output, password=pw)
+#    s_i, g_i = new_server('localhost', port_num, password=pw)
 
 
     col1, col2 = st.columns([0.5, 0.5])
