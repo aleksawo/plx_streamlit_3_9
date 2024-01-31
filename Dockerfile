@@ -15,6 +15,8 @@ RUN pip3 install -r requirements.txt
 
 EXPOSE 10002
 
-HEALTHCHECK CMD curl --fail http://localhost:10002/_stcore/health
+HEALTHCHECK CMD curl --fail http://0.0.0.0:10002/_stcore/health
 
 ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=10002", "--server.address=0.0.0.0"]
+
+

@@ -1,0 +1,9 @@
+services:
+  backend:
+    build: .
+    env_file:
+      - docker-env.txt
+    ports:
+      - "10002:10002"
+    image: plaxis_streamlit_image
+    container_name: plaxis_streamlit_container
