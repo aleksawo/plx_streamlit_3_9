@@ -20,8 +20,11 @@ def run_plaxis_model_plotter():
     #port_num = 10000
     #port_num_output = 10001
 
-    s_o, g_o = new_server('localhost', port_num_output, password=pw)
-    s_i, g_i = new_server('localhost', port_num, password=pw)
+#    s_o, g_o = new_server('localhost', port_num_output, password=pw)
+#    s_i, g_i = new_server('localhost', port_num, password=pw)
+
+    s_o, g_o = new_server('127.0.0.1', port_num_output, password=pw)
+    s_i, g_i = new_server('127.0.0.1', port_num, password=pw)
 
 
     col1, col2 = st.columns([0.5, 0.5])
