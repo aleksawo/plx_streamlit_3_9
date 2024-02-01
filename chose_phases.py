@@ -27,7 +27,6 @@ def checkbox_container(data):
     for i in data:
         st.checkbox(i, key='dynamic_checkbox_' + i)
 
-
 def get_selected_checkboxes():
     return [i.replace('dynamic_checkbox_' ,'') for i in st.session_state.keys() if i.startswith('dynamic_checkbox_') and st.session_state[i]]
 

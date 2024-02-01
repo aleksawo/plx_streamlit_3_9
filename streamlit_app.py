@@ -20,4 +20,3 @@ with st.sidebar:
 
 with tab1:
     run_plaxis_model_plotter(s_o, g_o, s_i, g_i)
-
