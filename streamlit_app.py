@@ -22,32 +22,7 @@ with st.sidebar:
     port_num_output = st.number_input('port output',value=10001)
     s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
 
-    
-'''
 
-with st.sidebar:
-    #pw = st.text_input('input plaxis passord')
-    pw='?GBz75iy^BwZy/2Y'#input("Passord for remote scripting server: ")
-    port_num = st.number_input('port input',value=10000)
-    port_num_output = st.number_input('port output',value=10001)
-    s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
-
-#pw = st.text_input('input plaxis passord')
-pw='?GBz75iy^BwZy/2Y'#input("Passord for remote scripting server: ")
-port_num = 10000
-port_num_output = 10001
-s_o, g_o = new_server('host.docker.internal', port_num_output, password=pw)
-s_i, g_i = new_server('host.docker.internal', port_num, password=pw)
-
-
-#pw = st.text_input('input plaxis passord')
-pw='?GBz75iy^BwZy/2Y'#input("Passord for remote scripting server: ")
-port_num = st.number_input('port input',value=10000)
-port_num_output = st.number_input('port output',value=10001)
-s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
-
-
-'''
 
 option = st.selectbox('Velg funksjon', ('2D plotter', 'ankerkrefter', 'spunt krefter'))
 
