@@ -11,30 +11,35 @@ def project_title(g_i):
     proj_title = proj_title[1:-1]
     return proj_title
 
-def get_phase_screenname(phase):
-    return '{} - {}'.format(phase.Name.value, phase.Identification.value.split('[')[0].strip())
+def get_phase_screenname(_phase):
+    return '{} - {}'.format(_phase.Name.value, _phase.Identification.value.split('[')[0].strip())
 
-def checkbox_container(data):
+
+def checkbox_container(data, string_selection):
     cols = st.columns(3)
-    if cols[0].button('Select All'):
+    if cols[0].button('Select All'+' '+string_selection):
         for i in data:
-            st.session_state['dynamic_checkbox_' + i] = True
+            st.session_state[string_selection + i] = True
         st.experimental_rerun()
-    if cols[1].button('UnSelect All'):
+    if cols[1].button('UnSelect All'+ ' '+string_selection):
         for i in data:
-            st.session_state['dynamic_checkbox_' + i] = False
+            st.session_state[string_selection + i] = False
         st.experimental_rerun()
     for i in data:
-        st.checkbox(i, key='dynamic_checkbox_' + i)
+        st.checkbox(i, key=string_selection + i)
 
-def get_selected_checkboxes():
-    return [i.replace('dynamic_checkbox_' ,'') for i in st.session_state.keys() if i.startswith('dynamic_checkbox_') and st.session_state[i]]
 
-def get_phase_name(phasechoices, g_o):
+
+    return checkbox_container
+
+def get_selected_checkboxes(string_selection):
+    return [i.replace(string_selection ,'') for i in st.session_state.keys() if i.startswith(string_selection) and st.session_state[i]]
+
+def get_phase_name(phasechoices, _g_o):
     phase_list_names = []
     phaselist = []
     if phasechoices:
-        for phase in g_o.Phases[:]:
+        for phase in _g_o.Phases[:]:
             if get_phase_screenname(phase) in phasechoices:
                 phaselist.append(phase)
                 phase_list_names.append(phase.Identification.value)
