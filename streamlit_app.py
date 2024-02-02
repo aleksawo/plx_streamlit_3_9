@@ -12,8 +12,8 @@ from spunt_2D_plotter import run_spunt_2D
 #tab1, tab2 = st.tabs(["Plott modell", "Hent ankerkrefter"])
 #host.docker.internal
 def start_server(pw, port_num, port_num_output):
-    s_o, g_o = new_server('localhost', port_num_output, password=pw)
-    s_i, g_i = new_server('localhost', port_num, password=pw)
+    s_o, g_o = new_server('http://host.docker.internal:PORT/ENDPOINT', port_num_output, password=pw)
+    s_i, g_i = new_server('http://host.docker.internal:PORT/ENDPOINT', port_num, password=pw)
     return s_o, g_o, s_i, g_i
 
 with st.sidebar:
