@@ -37,7 +37,8 @@ def run_plaxis_model_plotter(s_o, g_o, s_i, g_i):
 
 
         with col2:
-            type_plot = st.multiselect('Velg plot', ['U_tot', 'U_inc', 'delta_y_s', 'tot_y_s'])
+            st.header("Velg type plot")
+            type_plot = st.multiselect(' ', ['U_tot', 'U_inc', 'delta_y_s', 'tot_y_s'])
 
             brukerdefinert_zoom = st.checkbox('Brukerdefinert zoom på plottene')
             if brukerdefinert_zoom:
