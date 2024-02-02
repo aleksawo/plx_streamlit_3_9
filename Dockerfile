@@ -1,3 +1,4 @@
+ARG CACHEBUST=1
 FROM python:3.9-slim
 
 WORKDIR /plx_streamlit_3_9
@@ -8,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     git \
     && rm -rf /var/lib/apt/lists/*
+
 
 RUN git clone https://github.com/aleksawo/plx_streamlit_3_9.git .
 
