@@ -5,5 +5,7 @@ services:
       - docker-env.txt
     ports:
       - "10002:10002"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     image: plaxis_streamlit_image
     container_name: plaxis_streamlit_container
