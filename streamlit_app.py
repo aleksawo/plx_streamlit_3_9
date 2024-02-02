@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from plaxis_2D_plotter import run_plaxis_model_plotter
 from  ankerkrefter_2D import run_ankerkrefter_2D
-from spunt_2D_plotter import run_spunt_2D
+#from spunt_2D_plotter import run_spunt_2D
 
 #streamlit run your_script.py --server.port 80
 
@@ -35,8 +35,8 @@ if '2D plotter' in option:
 if 'ankerkrefter' in option:
     run_ankerkrefter_2D(s_o, g_o, s_i, g_i)
 
-if 'spunt krefter' in option:
-    run_spunt_2D(s_o, g_o, s_i, g_i)
+#if 'spunt krefter' in option:
+#    run_spunt_2D(s_o, g_o, s_i, g_i)
 
 
 
