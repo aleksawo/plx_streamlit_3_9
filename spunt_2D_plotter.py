@@ -2,7 +2,7 @@ from chose_phases import *
 import pandas as pd
 import time
 from chose_phases import ask_phases
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 @st.cache_data
 def koord_spunt(_g_i):
@@ -101,7 +101,7 @@ def get_plate_results(phases_list, Xplate, g_o):
     resultater['shear'] = plateV_res
     return resultater
 #    return plateY_res, plate_Ux_res, plateM_res, plateN_res, plateV_res
-
+'''
 def plot_results(resultater, i):
     fig, ax1 = plt.subplots()
 
@@ -143,7 +143,7 @@ def plot_results(resultater, i):
 
     # Show plot
 #    plt.show()
-
+'''
 
 def run_spunt_2D(s_o, g_o, s_i, g_i):
     st.title('Plaxis 2D spuntplott')
@@ -197,8 +197,8 @@ def run_spunt_2D(s_o, g_o, s_i, g_i):
             #plot_results(resultater)
 
 
-            for i in range(len(resultater['Y-kordinat'])):
-                plot_results(resultater, i)
+            #for i in range(len(resultater['Y-kordinat'])):
+                #plot_results(resultater, i)
 
 
 
