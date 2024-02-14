@@ -1,25 +1,28 @@
 from chose_phases import *
 import pandas as pd
 import time
-from chose_phases import ask_phases
+from chose_phases import *
 import matplotlib.pyplot as plt
+from plxscripting.easy import *
+import numpy as np
 
 @st.cache_data
-def koord_spunt(_g_i):
-    _g_i.gotostructures()
+def koord_spunt(pw, port_num, port_num_output):
+    s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
+    g_i.gotostructures()
     koord = []
 
     try:
 
-        for x in _g_i.Plates[:]:
+        for x in g_i.Plates[:]:
             plate = x.echo().splitlines()
             line = plate[0].split("on ", 1)[1]
-            for y in _g_i.Lines[:]:
+            for y in g_i.Lines[:]:
 
                 if line == y.info().splitlines()[0]:
                     point_list = y.echo().splitlines()
                     point = point_list[1].split("\"", 2)[1]
-                    for z in _g_i.Points[:]:
+                    for z in g_i.Points[:]:
                         if point == z.info().splitlines()[0]:
                             koord.append(round(z.x.value, 2))
 
@@ -28,7 +31,7 @@ def koord_spunt(_g_i):
         pass
 
     time.sleep(0.1)
-    _g_i.gotostages()
+    g_i.gotostages()
     return koord
 
 def get_plate_results(phases_list, Xplate, g_o):
@@ -102,6 +105,44 @@ def get_plate_results(phases_list, Xplate, g_o):
     return resultater
 #    return plateY_res, plate_Ux_res, plateM_res, plateN_res, plateV_res
 
+
+
+def plot_results_separate(resultater, i, spacing_dybde=1, figsize=(6, 10)):
+
+    quantities = {'Ux', 'Moment', 'Aksial', 'shear'}
+    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+
+    # Create figure and subplots (2 rows, 2 columns)
+    fig, axs = plt.subplots(2, 2, figsize=figsize)
+
+    max_values = {quantity: np.abs(resultater[quantity][i]).max().round(1) for quantity in quantities}
+
+    # Iterate through quantities and subplots
+    for (j, quantity), ax, color in zip(enumerate(quantities), axs.flat, colors):
+        y = resultater['Y-kordinat'][i]
+        x = resultater[quantity][i]
+
+        max_val_str = f"{quantity}: {max_values[quantity]}"
+
+        # Plot on the current subplot
+        ax.plot(x, y, color=color, label=quantity+' '+max_val_str)
+
+        # Customize labels and grid
+        ax.set_xlabel(quantity)
+        ax.set_ylabel('Y-kordinat')
+        ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+        ax.legend(loc='best')
+        locator = plt.MultipleLocator(spacing_dybde)
+        ax.yaxis.set_major_locator(locator)
+
+        # Optional annotations for max values (you can add them)
+        # ...
+
+    # Adjust layout and show
+    plt.tight_layout()
+    st.pyplot(fig)
+
+
 def plot_results(resultater, i):
     fig, ax1 = plt.subplots()
 
@@ -135,35 +176,41 @@ def plot_results(resultater, i):
     ax2.legend(loc='best')
     ax3.legend(loc='best')
     ax4.legend(loc='best')
-
-
-
-
     st.pyplot(fig)
 
     # Show plot
 #    plt.show()
 
+def start_server(pw, port_num, port_num_output):
+    s_o, g_o = new_server('localhost', port_num_output, password=pw)
+    s_i, g_i = new_server('localhost', port_num, password=pw)
+    return s_o, g_o, s_i, g_i
 
-def run_spunt_2D(s_o, g_o, s_i, g_i):
+def run_spunt_2D():
     st.title('Plaxis 2D spuntplott')
     col1, col2 = st.columns([0.5, 0.5])
 
     with st.form("spunt_form"):
+        with st.sidebar:
+            # pw = st.text_input('input plaxis passord')
+            pw = '?GBz75iy^BwZy/2Y'  # input("Passord for remote scripting server: ")
+            port_num = st.number_input('port input', value=10000)
+            port_num_output = st.number_input('port output', value=10001)
+
+        phase_data = get_phase_data_list(pw, port_num, port_num_output)
+        liste_koordi = koord_spunt(pw, port_num, port_num_output)
 
         with col1:
+
             st.header("Velg faser")
 
-            # phases, phase_name =ask_phases(g_o)
-
             if 'phase_data' not in st.session_state.keys():
-                phase_data = [get_phase_screenname(phase) for phase in g_o.Phases[:]]
                 st.session_state['dummy_data_phases'] = phase_data
             else:
                 phase_data = st.session_state['dummy_data_phases']
             checkbox_container_faser = checkbox_container(phase_data, 'faser')
-            phases, phase_name = get_phase_name(get_selected_checkboxes('faser'), g_o)
-            save_location_ankerkrefter = st.text_input('mappe for lagring ankerkrefter')
+
+            save_location_ankerkrefter = st.text_input('mappe for lagring av plott')
 
         with col2:
             st.header("Velg spunt")
@@ -183,7 +230,7 @@ def run_spunt_2D(s_o, g_o, s_i, g_i):
                 anker_data = st.session_state['dummy_data_anker']
             '''
             spunt_data = []
-            liste_koordi = koord_spunt(g_i)
+
             for i in range(len(liste_koordi)):
                 spunt_data.append(''.join(str(liste_koordi[i])))
 
@@ -191,6 +238,8 @@ def run_spunt_2D(s_o, g_o, s_i, g_i):
             x_plate = float(valgt_spunt)
         submitted_spunt = st.form_submit_button("Hent spuntkrefter og deformasjon")
         if submitted_spunt:
+            s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
+            phases, phase_name = get_phase_name(get_selected_checkboxes('faser'), g_o)
 
             resultater = get_plate_results(phases, x_plate, g_o)
 
@@ -198,7 +247,8 @@ def run_spunt_2D(s_o, g_o, s_i, g_i):
 
 
             for i in range(len(resultater['Y-kordinat'])):
-                plot_results(resultater, i)
+                #plot_results(resultater, i)
+                plot_results_separate(resultater, i, spacing_dybde=1, figsize=(6, 10))
 
 
 

@@ -6,34 +6,30 @@ import os
 from chose_phases import *
 
 
-def run_plaxis_model_plotter(s_o, g_o, s_i, g_i):
+
+def run_plaxis_model_plotter():
     st.title('Plaxis 2D plotter')
     col1, col2 = st.columns([0.5, 0.5])
+    with st.sidebar:
+        #pw = st.text_input('input plaxis passord')
+        pw = '?GBz75iy^BwZy/2Y'  # input("Passord for remote scripting server: ")
+        port_num = st.number_input('port input', value=10000)
+        port_num_output = st.number_input('port output', value=10001)
+
+    phase_data = get_phase_data_list(pw, port_num, port_num_output)
 
     with st.form("my_form"):
+
         with col1:
             st.header("Velg faser")
             #    phases, phase_name = ask_phases()
-
             if 'phase_data' not in st.session_state.keys():
-                phase_data = [get_phase_screenname(phase) for phase in g_o.Phases[:]]
+
                 st.session_state['dummy_data'] = phase_data
             else:
                 phase_data = st.session_state['dummy_data']
             checkbox_container_faser = checkbox_container(phase_data, 'faser')
-
-            # st.write('You selected:')
-            # st.write(get_selected_checkboxes())
-
-            phases, phase_name = get_phase_name(get_selected_checkboxes('faser'), g_o)
-
-            # st.write(phase_name)
-
             save_location = st.text_input('mappe for lagring plott')
-        # save_location= r'C:\Users\alew\Documents\Jobbting\Plaxis\Test_plott'
-
-        # type_plot = st.multiselect('Velg plott', ['Utot','U_inc',3])
-
 
 
         with col2:
@@ -58,8 +54,12 @@ def run_plaxis_model_plotter(s_o, g_o, s_i, g_i):
         submitted = st.form_submit_button("Plott faser")
 
         if submitted:
+            s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
+            phases, phase_name = get_phase_name(get_selected_checkboxes('faser'), g_o)
+
             # g_o.Plots[-1].zoom(-10, 10, 10, 40)
             os.chdir(save_location)
+            phases_list = phases
 
             for plot_type in type_plot:
                 if plot_type == 'U_tot':
@@ -71,9 +71,12 @@ def run_plaxis_model_plotter(s_o, g_o, s_i, g_i):
                 elif plot_type == 'tot_y_s':
                     result_type = g_o.ResultTypes.Soil.TotalDeviatoricStrain
 
-                for phase in phases[0:]:
+                for phase in phases_list[0:]:
                     newest_plot = g_o.Plots[-1]
-                    newest_plot.Phase = g_o.Phases[int(phase.Number.echo().split(' ')[-1])]
+                    #newest_plot.Phase = g_o.Phases[int(phase.Number.echo().split(' ')[-1])]
+                    phase_attribute_name = f"Phase_{int(phase.Number.echo().split(' ')[-1])}"  # Create the attribute name dynamically
+                    newest_plot.Phase = getattr(g_o, phase_attribute_name)
+
                     newest_plot.ResultType = result_type
                     newest_plot.PlotType = 'shadings'
                     max_value_result_type = max(g_o.getresults(phase, result_type, 'node'))
@@ -82,4 +85,9 @@ def run_plaxis_model_plotter(s_o, g_o, s_i, g_i):
                     if brukerdefinert_zoom:
                         newest_plot.zoom(x1, y1, x2, y2)
                     newest_plot.export(name_plot, 1200, 800)
+
+                    #pil_image = newest_plot.export('test.png', 1200, 800)
+                    #st.image('test.png')
+
+
                     st.image(phase.Identification.value + '_' + plot_type + '.png')

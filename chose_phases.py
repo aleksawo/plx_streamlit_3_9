@@ -1,8 +1,11 @@
-
+from plxscripting.easy import *
 import streamlit as st
 
 
-
+def start_server(pw, port_num, port_num_output):
+    s_o, g_o = new_server('localhost', port_num_output, password=pw)
+    s_i, g_i = new_server('localhost', port_num, password=pw)
+    return s_o, g_o, s_i, g_i
 
 def project_title(g_i):
     proj_info = g_i.echo()
@@ -11,6 +14,16 @@ def project_title(g_i):
     proj_title = proj_title[1:-1]
     return proj_title
 
+@st.cache_data
+def get_phase_data(g_o):
+    phase_data = [get_phase_screenname(phase) for phase in g_o.Phases[:]]
+    return phase_data
+@st.cache_data
+def get_phase_data_list(pw, port_num, port_num_output):
+    pw="?GBz75iy^BwZy/2Y"
+    s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
+    phase_data = [get_phase_screenname(phase) for phase in g_o.Phases[:]]
+    return phase_data
 def get_phase_screenname(_phase):
     return '{} - {}'.format(_phase.Name.value, _phase.Identification.value.split('[')[0].strip())
 

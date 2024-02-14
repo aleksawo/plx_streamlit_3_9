@@ -12,18 +12,14 @@ from spunt_2D_plotter import run_spunt_2D
 #tab1, tab2 = st.tabs(["Plott modell", "Hent ankerkrefter"])
 #host.docker.internal
 def start_server(pw, port_num, port_num_output):
-    s_o, g_o = new_server('host.docker.internal', port_num_output, password=pw)
-    s_i, g_i = new_server('host.docker.internal', port_num, password=pw)
+    s_o, g_o = new_server('localhost', port_num_output, password=pw)
+    s_i, g_i = new_server('localhost', port_num, password=pw)
     return s_o, g_o, s_i, g_i
 #http://host.docker.internal:PORT/ENDPOINT
 #requests.get("http://host.docker.internal:PORT/ENDPOINT")
 #'http://host.docker.internal'
-with st.sidebar:
-    #pw = st.text_input('input plaxis passord')
-    pw='?GBz75iy^BwZy/2Y'#input("Passord for remote scripting server: ")
-    port_num = st.number_input('port input',value=10000)
-    port_num_output = st.number_input('port output',value=10001)
-    s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
+#'host.docker.internal'
+
 
 
 
@@ -32,13 +28,13 @@ option = st.selectbox('Velg funksjon', ('2D plotter', 'ankerkrefter', 'spunt kre
 #st.write('You selected:', option)
 
 if '2D plotter' in option:
-    run_plaxis_model_plotter(s_o, g_o, s_i, g_i)
+    run_plaxis_model_plotter()
 
 if 'ankerkrefter' in option:
-    run_ankerkrefter_2D(s_o, g_o, s_i, g_i)
+    run_ankerkrefter_2D()
 
 if 'spunt krefter' in option:
-    run_spunt_2D(s_o, g_o, s_i, g_i)
+    run_spunt_2D()
 
 
 
