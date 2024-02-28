@@ -9,6 +9,8 @@ from chose_phases import *
 
 def run_plaxis_model_plotter():
     st.title('Plaxis 2D plotter')
+    if st.button("Clear Cache - Trykk for ny modell"):
+        get_phase_data_list.clear()
     col1, col2 = st.columns([0.5, 0.5])
     with st.sidebar:
         #pw = st.text_input('input plaxis passord')

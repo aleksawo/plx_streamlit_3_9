@@ -5,15 +5,14 @@ from chose_phases import *
 import matplotlib.pyplot as plt
 from plxscripting.easy import *
 import numpy as np
+import math
 
 @st.cache_data
 def koord_spunt(pw, port_num, port_num_output):
     s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
     g_i.gotostructures()
     koord = []
-
     try:
-
         for x in g_i.Plates[:]:
             plate = x.echo().splitlines()
             line = plate[0].split("on ", 1)[1]
@@ -25,7 +24,6 @@ def koord_spunt(pw, port_num, port_num_output):
                     for z in g_i.Points[:]:
                         if point == z.info().splitlines()[0]:
                             koord.append(round(z.x.value, 2))
-
                             time.sleep(0.1)
     except:
         pass
@@ -72,7 +70,8 @@ def get_plate_results(phases_list, Xplate, g_o):
         plateV_list_2 = []
         for i in range(len(plateX_list)):
             if abs(plateX_list[i] - Xplate) <= 0.0001:
-                plate_Ux_list_2.append(plate_Ux_list[i])
+#                plate_Ux_list_2.append(plate_Ux_list[i])
+                plate_Ux_list_2.append(plate_Ux_list[i]*100)
                 plate_Uy_list_2.append(plate_Uy_list[i])
                 plateX_list_2.append(plateX_list[i])
                 plateY_list_2.append(plateY_list[i])
@@ -95,22 +94,42 @@ def get_plate_results(phases_list, Xplate, g_o):
         plateM_res.append(plateM_list_2)
         plateN_res.append(plateN_list_2)
         plateV_res.append(plateV_list_2)
-
     resultater = pd.DataFrame()
     resultater['Y-kordinat'] = plateY_res
     resultater['Ux'] = plate_Ux_res
     resultater['Moment'] = plateM_res
     resultater['Aksial'] = plateN_res
     resultater['shear'] = plateV_res
+ #   resultater['Ux_cm']=resultater['Ux'].multiply(100)
     return resultater
 #    return plateY_res, plate_Ux_res, plateM_res, plateN_res, plateV_res
 
+def round_up(number):
+  """Rounds a number up to the nearest specified value based on its range.
+
+  Args:
+      number: The number to be rounded.
+
+  Returns:
+      The rounded number.
+  """
+  if 0 <= number <= 100:
+    return math.ceil(number / 10) * 10  # Round up to nearest 10th [[1](https://realpython.com/python-rounding/)]
+  elif 100 <= number <= 300:
+    return math.ceil(number / 20) * 20  # Round up to nearest 20th
+  elif 300 <= number <= 800:
+    return math.ceil(number / 50) * 50  # Round up to nearest 50
+  else:
+    return math.ceil(number / 100) * 100  # Round up to nearest 100
 
 
-def plot_results_separate(resultater, i, spacing_dybde=1, figsize=(6, 10)):
+
+def plot_results_separate(resultater, i, phase_name, save_location, spacing_dybde=1, figsize=(6, 10)):
 
     quantities = {'Ux', 'Moment', 'Aksial', 'shear'}
     colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+
+    label = ['Aksial (kN)', 'Skjær (kN)', 'Ux (cm)', 'Moment (kNm)']
 
     # Create figure and subplots (2 rows, 2 columns)
     fig, axs = plt.subplots(2, 2, figsize=figsize)
@@ -118,29 +137,37 @@ def plot_results_separate(resultater, i, spacing_dybde=1, figsize=(6, 10)):
     max_values = {quantity: np.abs(resultater[quantity][i]).max().round(1) for quantity in quantities}
 
     # Iterate through quantities and subplots
-    for (j, quantity), ax, color in zip(enumerate(quantities), axs.flat, colors):
+    for (j, quantity), ax, color, label in zip(enumerate(quantities), axs.flat, colors, label):
         y = resultater['Y-kordinat'][i]
         x = resultater[quantity][i]
 
-        max_val_str = f"{quantity}: {max_values[quantity]}"
+#        max_val_str = f"{quantity}: {max_values[quantity]}"
+#        max_val_str = f"{max_values[quantity]}"
+        max_val_str = f"maks: {max_values[quantity]}"
 
         # Plot on the current subplot
         ax.plot(x, y, color=color, label=quantity+' '+max_val_str)
 
         # Customize labels and grid
-        ax.set_xlabel(quantity)
+        ax.set_xlabel(label)
         ax.set_ylabel('Y-kordinat')
         ax.grid(True, which='both', linestyle='--', linewidth=0.5)
         ax.legend(loc='best')
         locator = plt.MultipleLocator(spacing_dybde)
         ax.yaxis.set_major_locator(locator)
+        ax.set_xticks(np.linspace(-round_up(abs(min(x))), round_up(max(x)), 5))
 
         # Optional annotations for max values (you can add them)
         # ...
 
     # Adjust layout and show
     plt.tight_layout()
+    plt.suptitle(phase_name[i])
+    plt.subplots_adjust(top=0.95)
+
     st.pyplot(fig)
+    name_plot = save_location + '''//''' + phase_name[i] + '' + '.png'
+    plt.savefig(name_plot)
 
 
 def plot_results(resultater, i):
@@ -176,6 +203,9 @@ def plot_results(resultater, i):
     ax2.legend(loc='best')
     ax3.legend(loc='best')
     ax4.legend(loc='best')
+
+
+
     st.pyplot(fig)
 
     # Show plot
@@ -188,6 +218,11 @@ def start_server(pw, port_num, port_num_output):
 
 def run_spunt_2D():
     st.title('Plaxis 2D spuntplott')
+
+    if st.button("Clear Cache - Trykk for ny modell"):
+        koord_spunt.clear()  # Properly clears the cache of my_function
+        get_phase_data_list.clear()
+
     col1, col2 = st.columns([0.5, 0.5])
 
     with st.form("spunt_form"):
@@ -210,48 +245,34 @@ def run_spunt_2D():
                 phase_data = st.session_state['dummy_data_phases']
             checkbox_container_faser = checkbox_container(phase_data, 'faser')
 
-            save_location_ankerkrefter = st.text_input('mappe for lagring av plott')
+            save_location_spuntplot = st.text_input('mappe for lagring av plott')
 
         with col2:
             st.header("Velg spunt")
-            '''
-            if 'anker_data' not in st.session_state.keys():
-                anker_data = []
-                liste_koordi = koordnode_anchor(g_i)
-                for i in range(len(liste_koordi)):
-                    anker_data.append(''.join(str(liste_koordi[i])))
 
-
-
-                #            anker_data = [koordnode_anchor(g_i)]
-                st.session_state['dummy_data_anker'] = anker_data
-
-            else:
-                anker_data = st.session_state['dummy_data_anker']
-            '''
             spunt_data = []
-
             for i in range(len(liste_koordi)):
                 spunt_data.append(''.join(str(liste_koordi[i])))
 
             valgt_spunt = st.selectbox('velg spunt', spunt_data)
             x_plate = float(valgt_spunt)
-        submitted_spunt = st.form_submit_button("Hent spuntkrefter og deformasjon")
+
+        submitted_spunt = st.form_submit_button("Hent spuntkrefter og deformasjoner")
+
         if submitted_spunt:
             s_o, g_o, s_i, g_i = start_server(pw, port_num, port_num_output)
             phases, phase_name = get_phase_name(get_selected_checkboxes('faser'), g_o)
 
             resultater = get_plate_results(phases, x_plate, g_o)
 
+            #resultater['Ux']=resultater['Ux'].mul(100)
+
             #plot_results(resultater)
 
 
             for i in range(len(resultater['Y-kordinat'])):
                 #plot_results(resultater, i)
-                plot_results_separate(resultater, i, spacing_dybde=1, figsize=(6, 10))
-
-
-
+                plot_results_separate(resultater, i, phase_name, save_location_spuntplot, spacing_dybde=1, figsize=(6, 10))
 
 
 

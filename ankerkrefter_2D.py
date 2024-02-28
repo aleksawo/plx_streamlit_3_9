@@ -3,6 +3,7 @@ from chose_phases import *
 import pandas as pd
 import time
 from chose_phases import ask_phases
+from math import ceil
 
 @st.cache_data
 def koordnode_anchor(pw, port_num, port_num_output):
@@ -62,10 +63,16 @@ def split_koordinates(chosen_anchors, g_i):
 
 def run_ankerkrefter_2D():
     st.title('Plaxis 2D ankerkrefter')
+
+    if st.button("Clear Cache - Trykk for ny modell"):
+        koordnode_anchor.clear()  # Properly clears the cache of my_function
+        get_phase_data_list.clear()
+
+        koordnode_anchor.clear()
     col1, col2 = st.columns([0.5, 0.5])
     with st.sidebar:
-        pw = st.text_input('input plaxis passord')
-        #pw = '?GBz75iy^BwZy/2Y'  # input("Passord for remote scripting server: ")
+        #pw = st.text_input('input plaxis passord')
+        pw = '?GBz75iy^BwZy/2Y'  # input("Passord for remote scripting server: ")
         port_num = st.number_input('port input', value=10000)
         port_num_output = st.number_input('port output', value=10001)
 
@@ -187,6 +194,21 @@ def run_ankerkrefter_2D():
                 for l in range(len(x_kord)):
                     stiver = 'Stiver ' + str(l + 1) + ' (' + str(x_kord[l]) + ', ' + str(y_kord[l]) + ') ' + '[kN]'
                     resultater_node[stiver][i] = anchorF_res[i][l]
+            #max_krefeter= resultater_node.max()
+            for l in range(len(x_kord)):
+                stiver = 'Stiver ' + str(l + 1) + ' (' + str(x_kord[l]) + ', ' + str(y_kord[l]) + ') ' + '[kN]'
+                dim_last = 1.35 * resultater_node[stiver].max()
+                nød_ant_lisse_mid = ceil(dim_last / 179)
+                nød_ant_lisse_perm = ceil(dim_last / 119)
+
+                resultater_node.loc[len(resultater_node.index)] = ["nødvendig antall lisser midlertidig"] * len(resultater_node.columns)
+                resultater_node.iloc[-1, l] = nød_ant_lisse_mid
+
+                resultater_node.loc[len(resultater_node.index)] = ["nødvendig antall lisser permanent"] * len(
+                    resultater_node.columns)
+                resultater_node.iloc[-1, l] = nød_ant_lisse_perm
+
+
 
             filname = save_location_ankerkrefter + '''//''' + 'ankerkrefter.xlsx'
 
